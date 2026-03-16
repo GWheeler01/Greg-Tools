@@ -26,6 +26,10 @@ class ThreadPoolManager:
 
         Returns:
             List of results
+
+        WARNING: 
+            This should be used for functions that take a set of input parameters and return outputs, without modifying the inputs or global variables.
+            If multiple concurrent tasks attempt to change data outside of their own scope, negative outcomes are likely to occur.
         """
 
         tasks: List[Tuple] = list(zip(*iterables))
