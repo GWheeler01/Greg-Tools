@@ -6,9 +6,9 @@ def ncbi_blast(sequence_data: str):
         program="blastn",
         database="nt",
         sequence=sequence_data,
-        hitlist_size=10,
+        hitlist_size=20,
         expect=1.0,
-        megablast=False
+        megablast=True
     )
     
     # Parse the resulting XML
@@ -54,9 +54,19 @@ with open(output_file, 'w', buffering=1) as out:
             id = f"{fields[0]}:{fields[1]}"
             seq = fields[4]
             print(f'{count} : {seq}')
-            record = ncbi_blast(seq)
-            record_dict = parse_records(record)
-            print(record_dict)
-            out.write(f'\"{id}\":{json.dumps(record_dict)},\n')
-            time.sleep(sleep_delay)
+            success = False
+            retries = 0
+            while success is False and retries < 20:
+                try:
+                    record = ncbi_blast(seq)
+                    record_dict = parse_records(record)
+                    print(record_dict)
+                    out.write(f'\"{id}\":{json.dumps(record_dict)},\n')
+                    success = True
+                    time.sleep(sleep_delay)
+                except Exception as e:
+                    print(f'Error: {str(e)}')
+                    retries += 1
+                    time.sleep(sleep_delay * 2)
+            count += 1
     out.write("}")
